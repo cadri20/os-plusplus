@@ -1,0 +1,48 @@
+# Ignore common binary/executable files and build outputs
+
+# Object and intermediate files
+*.o
+*.obj
+*.lo
+*.pch
+*.gch
+
+# Static and dynamic libraries
+*.a
+*.lib
+*.so
+*.so.*
+*.dylib
+*.dll
+
+# Executables and generic build outputs
+*.exe
+*.out
+*.app/
+bin/
+build/
+dist/
+release/
+debug/
+target/
+
+# Debug/symbol files
+*.pdb
+*.ilk
+*.dSYM/
+*.stackdump
+
+# Java bytecode and archives
+*.class
+*.jar
+*.war
+*.ear
+
+# Python compiled files
+__pycache__/
+*.py[cod]
+*.pyd
+
+# Core dumps
+core
+*.core
