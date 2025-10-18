@@ -1,4 +1,5 @@
 #include "utils.hpp"
+#include "screen.hpp"
 
 #define PIC1_C 0x20
 #define PIC1_D 0x21
@@ -9,16 +10,7 @@
 #define ICW1_ICW4 0x01
 #define ICW4_x86 0x01
 
-void cls();
-void setMonitorColor(char);
-
-void printString(char*);
-void printChar(char);
-
 void scroll();
-
-void printColorString(char* , char);
-void printColorChar(char , char);
 
 void initIDT();
 extern "C" void loadIdt();
@@ -29,9 +21,6 @@ void picRemap();
 
 unsigned char inportb(unsigned short);
 void outportb(unsigned short , unsigned char);
-
-int CELL;
-
 
 char COMMAND[21];
 int i = 0;
@@ -50,93 +39,20 @@ unsigned int base;
 
 extern "C" void start(){
 	utils::TM_START = (char*) 0xb8000;
-	CELL = 0;
 	base = (unsigned int)&isr1;
 
-	cls();
-	setMonitorColor(0xa5);
+	screen::cls();
+	screen::setMonitorColor(0xa5);
 
 	char Welcome[] = "Welcome To OS0 : Copyright 2021\n";
 	char Welcome2[] = "Command Line Version 1.0.0.0\n\n";
 	char OSM[] = "OS0 > ";
 
-	printString(Welcome);
-	printString(Welcome2);
-	printColorString(OSM , 0xa8);
+	screen::printString(Welcome);
+	screen::printString(Welcome2);
+	screen::printColorString(OSM , 0xa8);
 
 	initIDT();
-}
-
-
-void cls(){
-	int i = 0;
-	CELL = 0;
-	while(i < (2 * 80 * 25)){
-		*(utils::TM_START + i) = ' '; // Clear screen
-		i += 2;
-	}
-}
-
-void setMonitorColor(char Color){
-	int i = 1;
-	while(i < (2 * 80 * 25)){
-		*(utils::TM_START + i) = Color;
-		i += 2;
-	}
-}
-
-void printString(char* cA){
-	int i = 0;
-	while(*(cA + i) != '\0'){
-		printChar(*(cA + i));
-		i++;
-	}
-}
-
-void printChar(char c){
-	if(CELL == 2 * 80 * 25)
-		scroll();
-	if(c == '\n'){
-		CELL = ((CELL + 160) - (CELL % 160));
-		return;
-	}
-	*(utils::TM_START + CELL) = c;
-	CELL += 2;	
-}
-
-void scroll(){
-	int i = 160 , y = 0;
-	while(i < 2 * 80 * 25){
-		*(utils::TM_START + y) = *(utils::TM_START + i);
-		i += 2;
-		y += 2;
-	}
-	CELL = 2 * 80 * 24;
-	i = 0;
-	while(i < 160){
-		*(utils::TM_START + CELL + i) = ' ';
-		i += 2;
-	}
-}
-
-void printColorString(char* c , char co){
-	int i = 0;
-	while(*(c + i) != '\0'){
-		printColorChar(*(c + i) , co);
-		i++;
-	}
-}
-
-void printColorChar(char c , char co){
-	if(CELL == 2 * 80 * 25)
-		scroll();
-	if(c == '\n'){
-		CELL = ((CELL + 160) - (CELL % 160));
-		return;
-	}
-	*(utils::TM_START + CELL) = c;
-	*(utils::TM_START + CELL + 1) = co;
-	CELL += 2;	
 }
 
 void initIDT(){
@@ -189,7 +105,7 @@ void handleKeypress(int code){
 		COMMAND[i] = '\0';
 		i = 0;
 		utils::strEval(COMMAND);
-		printString(OSM);
+		screen::printString(OSM);
 	}
 	else if(code < 0x3a)
 		pressed(Scancode[code]);
@@ -199,10 +115,10 @@ void pressed(char key){
 	if(i != 20){
 		COMMAND[i] = key;
 		i++;
-		printChar(key);
+		screen::printChar(key);
 	}
 	else{
-		utils::blink();
+		screen::blink();
 	}
 }
 

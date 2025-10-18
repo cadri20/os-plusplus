@@ -1,7 +1,5 @@
 #include "utils.hpp"
-void setMonitorColor(char Color);
-void cls();
-void printString(char* str);
+#include "screen.hpp"
 
 int blockAddr;
 char At[1024];
@@ -12,13 +10,6 @@ extern "C" void read();
 extern "C" void write();
 
 char* TM_START;
-
-void blink(){
-	setMonitorColor(0x59);
-	int TIME_OUT = 0x10fffff;
-	while(--TIME_OUT);
-	setMonitorColor(0xa5);
-}
 
 char strcmp(char* sou , char* dest){
 	int i = 0;
@@ -44,24 +35,24 @@ void strEval(char* CMD){
 	char msg1[] = "\nHELLO , HAVE A GOOD JOURNEY LEARNING\n";
 
 	if(strcmp(CMD , cmd1))
-		cls();
+		screen::cls();
 
 	else if(strcmp(CMD , cmd2))
-		setMonitorColor(0x3c);
+		screen::setMonitorColor(0x3c);
 
 	else if(strcmp(CMD , cmd3))
-		setMonitorColor(0x5a);
+		screen::setMonitorColor(0x5a);
 
 	else if(strcmp(CMD , cmd4))
-		setMonitorColor(0x2a);
+		screen::setMonitorColor(0x2a);
 
 	else if(strcmp(CMD , cmd5))
-		setMonitorColor(0xa5);	
+		screen::setMonitorColor(0xa5);	
 
 	else if(strcmp(CMD , cmd6))
 		vid();
 	else if(strcmp(CMD , cmd7))
-		printString(msg1);
+		screen::printString(msg1);
 	else if(strcmp(CMD , cmd8)){
 		blockAddr = 0;
 		int i = 0;
@@ -83,7 +74,7 @@ void strEval(char* CMD){
 	else if(strcmp(CMD , cmd9)){
 		blockAddr = 0;
 		get();
-		printString(At);
+		screen::printString(At);
 	}
 		
 }
