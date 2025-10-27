@@ -17,7 +17,10 @@ namespace utils {
     // Utilities
     void blink();
     char strcmp(char* sou, char* dest);
-    void strEval(char* CMD);
+    void strEval(char* textEntry);
+    void getCommand(char* entry, char* output);
+    void getParameter(char* entry, char* output);
+    int toInt(char* text);
 
     // Shared data (defined in utils.cpp)
     extern char* TM_START;

@@ -5,29 +5,47 @@ extern "C" char read_port(unsigned short port);
 
 namespace ata_driver
 {
-    void write_buffer(int sector, char *buffer)
+    void write_buffer(unsigned int lba, char *buffer, unsigned int sector_count)
     {
-        unsigned short sec = sector;
-        unsigned short cyl = sector / 36;
-        unsigned short head = (sector / 18) % 2;
-        unsigned short sect = (sector % 18) + 1;
+        unsigned char status;
 
-        write_port(0x1F2, 1);                    // Number of sectors to write
-        write_port(0x1F3, sect & 0xFF);          // Sector number
-        write_port(0x1F4, cyl & 0xFF);           // Cylinder low byte
-        write_port(0x1F5, (cyl >> 8) & 0xFF);    // Cylinder high byte
-        write_port(0x1F6, (head & 0x0F) | 0xE0); // Drive and head
-        write_port(0x1F7, 0x30);                 // Command: Write sectors
+    // --- Configurar dirección LBA ---
+    write_port(0x1F6, 0xE0 | ((lba >> 24) & 0x0F)); // drive + modo LBA + bits 24–27 del LBA
 
-        // Wait for the drive to be ready
-        while ((read_port(0x1F7) & 0x08) == 0)
-            ;
+    // Número de sectores a escribir
+    write_port(0x1F2, sector_count);
 
-        // Write data
-        for (int i = 0; i < 512; i++)
-        {
-            write_port(0x1F0, buffer[i]);
+    // Bits 0–7 del LBA
+    write_port(0x1F3, (unsigned char)(lba & 0xFF));
+
+    // Bits 8–15 del LBA
+    write_port(0x1F4, (unsigned char)((lba >> 8) & 0xFF));
+
+    // Bits 16–23 del LBA
+    write_port(0x1F5, (unsigned char)((lba >> 16) & 0xFF));
+
+    // Comando: WRITE SECTORS (0x30)
+    write_port(0x1F7, 0x30);
+
+    // --- Para cada sector a escribir ---
+    for (int s = 0; s < sector_count; s++) {
+
+        // Esperar hasta que el disco esté listo (DRQ=1 y BSY=0)
+        do {
+            status = read_port(0x1F7);
+        } while (!(status & 0x08)); // esperar a que DRQ esté activo
+
+        // --- Escribir los 256 words (512 bytes) del sector ---
+        for (int i = 0; i < 256; i++) {
+            unsigned short data = buffer[s * 256 + i];
+            __asm__ volatile("outw %0, %1" : : "a"(data), "Nd"(0x1F0));
         }
+    }
+
+    // --- Esperar a que el disco termine ---
+    do {
+        status = read_port(0x1F7);
+    } while (status & 0x80); // esperar a que BSY=0
     }
 
     int read_sectors(int lba, int sectors, char *dst)
@@ -55,7 +73,8 @@ namespace ata_driver
         write_port(0x1F7, 0x20);
 
         // Polling: esperar DRQ (bit 3) = 1 y BSY = 0
-        while(read_port(0x1F7) & 0x80); // Esperar BSY = 0
+        while (read_port(0x1F7) & 0x80)
+            ; // Esperar BSY = 0
 
         // Transferir: cada sector = 256 palabras (16-bit)
         // Usamos operaciones de 8bit (read_port) dos veces para formar la palabra

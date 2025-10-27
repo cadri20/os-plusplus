@@ -17,4 +17,5 @@ namespace screen
     void printColorString(char *c, char co);
     void printColorChar(char c, char co);
     void blink();
+    void printBuffer(char* buffer, int size);
 }

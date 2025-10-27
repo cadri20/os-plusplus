@@ -99,4 +99,10 @@ namespace screen
             ;
         setMonitorColor(0xa5);
     }
+
+    void printBuffer(char* buffer, int size){
+        for(int i = 0; i < size; i++){
+            printChar(buffer[i]);
+        }
+    }
 }

@@ -25,7 +25,7 @@ namespace utils
 		return 0;
 	}
 
-	void strEval(char *CMD)
+	void strEval(char *textEntry)
 	{
 		char cmd1[] = "CLS";
 		char cmd2[] = "COLORA";
@@ -38,6 +38,11 @@ namespace utils
 		char cmd9[] = "GET";
 
 		char msg1[] = "\nHELLO , HAVE A GOOD JOURNEY LEARNING\n";
+
+		char CMD[21];
+		char parameter[21];
+		getCommand(textEntry, CMD);
+		getParameter(textEntry, parameter);
 
 		if (strcmp(CMD, cmd1))
 			screen::cls();
@@ -60,30 +65,31 @@ namespace utils
 			screen::printString(msg1);
 		else if (strcmp(CMD, cmd8))
 		{
-			blockAddr = 0;
 			int i = 0;
 
-			while (i < 511)
+			while (i < 1000)
 			{
-				At[i] = 'J'; // Fill with J
+				At[i] = parameter[0]; // Fill with J
 				i++;
 			}
-			At[i] = 0; // Null character
+			At[i] = '\0'; // Null character
 
 			put(); // Writes to Hard disk
 
 			i = 0;
-			while (i < 511)
+			while (i < 1000)
 			{
 				At[i] = 0; // Clears the content
 				i++;
+				blockAddr++;
 			}
 		}
 		else if (strcmp(CMD, cmd9))
 		{
 			blockAddr = 0;
-			get();
-			screen::printString(At);
+			int numSectors = toInt(parameter);
+			ata_driver::read_sectors(blockAddr, numSectors, At);
+			screen::printBuffer(At, numSectors * 512);
 		}
 	}
 
@@ -104,11 +110,44 @@ namespace utils
 
 	void put()
 	{
-		write();
+		ata_driver::write_buffer(blockAddr, At, 2);
 	}
 
 	void get()
 	{
 		ata_driver::read_sectors(blockAddr, 1, At);
+	}
+
+	void getCommand(char* entry, char* output){
+		//get text before space
+		int i = 0;
+		while(entry[i] != ' ' && entry[i] != '\0'){
+			output[i] = entry[i];
+			i++;
+		}	
+	}
+
+	void getParameter(char* entry, char* output){
+		//get text after space
+		int i = 0, j = 0;
+		while(entry[i] != ' ' && entry[i] != '\0'){
+			i++;
+		}
+		if(entry[i] == ' ')
+			i++;
+		while(entry[i] != '\0'){
+			output[j] = entry[i];
+			i++;
+			j++;
+		}
+	}
+
+	int toInt(char* text){
+		int i = 0, result = 0;
+		while(text[i] != '\0'){
+			result = result * 10 + (text[i] - '0');
+			i++;
+		}
+		return result;
 	}
 }
