@@ -12,8 +12,9 @@ echo "Compilando kernel en C"
 g++ -m32 -ffreestanding -c main.cpp -o bin/kernel.o
 g++ -m32 -ffreestanding -c utils.cpp -o bin/utils.o
 g++ -m32 -ffreestanding -c screen.cpp -o bin/screen.o
+g++ -m32 -ffreestanding -c ata_driver.cpp -o bin/ata_driver.o
 echo "Enlazando todo"
-ld -m elf_i386 -o bin/kernel.elf -Ttext 0x1000 bin/kernel_entry.o bin/kernel.o bin/utils.o bin/screen.o bin/idt.o bin/ata.o
+ld -m elf_i386 -o bin/kernel.elf -Ttext 0x1000 bin/kernel_entry.o bin/kernel.o bin/utils.o bin/screen.o bin/ata_driver.o bin/idt.o bin/ata.o 
 objcopy -O binary -j .text bin/kernel.elf bin/kernel.bin
 cat bin/bootsect.bin bin/kernel.bin > bin/os-image.bin
 qemu-system-i386 -drive format=raw,file=bin/os-image.bin

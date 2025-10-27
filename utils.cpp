@@ -1,101 +1,114 @@
+#include "ata_driver.hpp"
 #include "utils.hpp"
 #include "screen.hpp"
 
 int blockAddr;
 char At[1024];
 
-namespace utils{
+namespace utils
+{
 
-extern "C" void read();
-extern "C" void write();
+	extern "C" void read();
+	extern "C" void write();
 
-char* TM_START;
+	char *TM_START;
 
-char strcmp(char* sou , char* dest){
-	int i = 0;
-	while(*(sou + i) == *(dest + i)){
-		if(*(sou + i) == 0 && *(dest + i) == 0)
-			return 1;
-		i++;
-	}
-	return 0;
-}
-
-void strEval(char* CMD){
-	char cmd1[] = "CLS";
-	char cmd2[] = "COLORA";
-	char cmd3[] = "COLORB";
-	char cmd4[] = "COLORC";
-	char cmd5[] = "COLORDEF";
-	char cmd6[] = "VID";
-	char cmd7[] = "HI";
-	char cmd8[] = "PUT";
-	char cmd9[] = "GET";
-
-	char msg1[] = "\nHELLO , HAVE A GOOD JOURNEY LEARNING\n";
-
-	if(strcmp(CMD , cmd1))
-		screen::cls();
-
-	else if(strcmp(CMD , cmd2))
-		screen::setMonitorColor(0x3c);
-
-	else if(strcmp(CMD , cmd3))
-		screen::setMonitorColor(0x5a);
-
-	else if(strcmp(CMD , cmd4))
-		screen::setMonitorColor(0x2a);
-
-	else if(strcmp(CMD , cmd5))
-		screen::setMonitorColor(0xa5);	
-
-	else if(strcmp(CMD , cmd6))
-		vid();
-	else if(strcmp(CMD , cmd7))
-		screen::printString(msg1);
-	else if(strcmp(CMD , cmd8)){
-		blockAddr = 0;
+	char strcmp(char *sou, char *dest)
+	{
 		int i = 0;
-		
-		while(i < 511){
-			At[i] = 'J'; // Fill with J
+		while (*(sou + i) == *(dest + i))
+		{
+			if (*(sou + i) == 0 && *(dest + i) == 0)
+				return 1;
 			i++;
 		}
-		At[i] = 0; // Null character
-
-		put(); // Writes to Hard disk
-		
-		i = 0;
-		while(i < 511){
-			At[i] = 0;  // Clears the content
-			i++;
-		}
-	}		
-	else if(strcmp(CMD , cmd9)){
-		blockAddr = 0;
-		get();
-		screen::printString(At);
+		return 0;
 	}
-		
-}
 
-void vid(){
-	char clr = 'A';
-	while(1){
-		int i = 0;
-		while(i < 2 * 80 * 25){
-			*(TM_START + i) = clr;
-			clr++;
-			i++;
+	void strEval(char *CMD)
+	{
+		char cmd1[] = "CLS";
+		char cmd2[] = "COLORA";
+		char cmd3[] = "COLORB";
+		char cmd4[] = "COLORC";
+		char cmd5[] = "COLORDEF";
+		char cmd6[] = "VID";
+		char cmd7[] = "HI";
+		char cmd8[] = "PUT";
+		char cmd9[] = "GET";
+
+		char msg1[] = "\nHELLO , HAVE A GOOD JOURNEY LEARNING\n";
+
+		if (strcmp(CMD, cmd1))
+			screen::cls();
+
+		else if (strcmp(CMD, cmd2))
+			screen::setMonitorColor(0x3c);
+
+		else if (strcmp(CMD, cmd3))
+			screen::setMonitorColor(0x5a);
+
+		else if (strcmp(CMD, cmd4))
+			screen::setMonitorColor(0x2a);
+
+		else if (strcmp(CMD, cmd5))
+			screen::setMonitorColor(0xa5);
+
+		else if (strcmp(CMD, cmd6))
+			vid();
+		else if (strcmp(CMD, cmd7))
+			screen::printString(msg1);
+		else if (strcmp(CMD, cmd8))
+		{
+			blockAddr = 0;
+			int i = 0;
+
+			while (i < 511)
+			{
+				At[i] = 'J'; // Fill with J
+				i++;
+			}
+			At[i] = 0; // Null character
+
+			put(); // Writes to Hard disk
+
+			i = 0;
+			while (i < 511)
+			{
+				At[i] = 0; // Clears the content
+				i++;
+			}
+		}
+		else if (strcmp(CMD, cmd9))
+		{
+			blockAddr = 0;
+			get();
+			screen::printString(At);
 		}
 	}
-}
 
-void put(){
-	write();
-}
+	void vid()
+	{
+		char clr = 'A';
+		while (1)
+		{
+			int i = 0;
+			while (i < 2 * 80 * 25)
+			{
+				*(TM_START + i) = clr;
+				clr++;
+				i++;
+			}
+		}
+	}
 
-void get(){
-	read();
-}
+	void put()
+	{
+		write();
+	}
+
+	void get()
+	{
+		ata_driver::read_sectors(blockAddr, 1, At);
+	}
 }

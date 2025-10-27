@@ -1,5 +1,6 @@
 #pragma once
 
+
 namespace utils {
 
     // Video demo / infinite writer
