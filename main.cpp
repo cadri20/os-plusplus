@@ -1,5 +1,6 @@
 #include "utils.hpp"
 #include "screen.hpp"
+#include "debug.hpp"
 
 #define PIC1_C 0x20
 #define PIC1_D 0x21
@@ -43,6 +44,10 @@ extern "C" void start(){
 
 	screen::cls();
 	screen::setMonitorColor(0xa5);
+
+	debug::serial_init();
+	char msg[] = "Serial Port Initialized\n";
+	debug::serial_write_string(msg);
 
 	char Welcome[] = "Welcome To OS0 : Copyright 2021\n";
 	char Welcome2[] = "Command Line Version 1.0.0.0\n\n";

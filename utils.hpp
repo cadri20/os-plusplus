@@ -21,6 +21,8 @@ namespace utils {
     void getCommand(char* entry, char* output);
     void getParameter(char* entry, char* output);
     int toInt(char* text);
+    void toString(int value, char* buffer);
+    void clearBuffer(char* str, int size);
 
     // Shared data (defined in utils.cpp)
     extern char* TM_START;

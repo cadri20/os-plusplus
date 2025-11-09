@@ -1,8 +1,9 @@
 #include "ata_driver.hpp"
 #include "utils.hpp"
 #include "screen.hpp"
+#include "debug.hpp"
 
-int blockAddr;
+int blockAddr = 3;
 char At[1024];
 
 namespace utils
@@ -41,6 +42,7 @@ namespace utils
 
 		char CMD[21];
 		char parameter[21];
+		clearBuffer(parameter , 21);
 		getCommand(textEntry, CMD);
 		getParameter(textEntry, parameter);
 
@@ -67,28 +69,26 @@ namespace utils
 		{
 			int i = 0;
 
-			while (i < 1000)
+			char buffer[1024];
+			while (i < 1024)
 			{
-				At[i] = parameter[0]; // Fill with J
+				buffer[i] = 'J'; // Fill with J
 				i++;
 			}
-			At[i] = '\0'; // Null character
+			buffer[i] = '\0'; // Null character
 
-			put(); // Writes to Hard disk
+			char message[] = "\nWriting to disk...\n";
+			debug::serial_write_string(message);
+			debug::serial_write_string(parameter);
+			ata_driver::write_buffer(toInt(parameter), (unsigned short*)buffer, 1);// Writes to Hard disk
 
 			i = 0;
-			while (i < 1000)
-			{
-				At[i] = 0; // Clears the content
-				i++;
-				blockAddr++;
-			}
 		}
 		else if (strcmp(CMD, cmd9))
 		{
-			blockAddr = 0;
-			int numSectors = toInt(parameter);
-			ata_driver::read_sectors(blockAddr, numSectors, At);
+			blockAddr = 3;
+			int numSectors = 1;
+			ata_driver::read_sectors(toInt(parameter), numSectors, At);
 			screen::printBuffer(At, numSectors * 512);
 		}
 	}
@@ -110,7 +110,7 @@ namespace utils
 
 	void put()
 	{
-		ata_driver::write_buffer(blockAddr, At, 2);
+		
 	}
 
 	void get()
@@ -149,5 +149,31 @@ namespace utils
 			i++;
 		}
 		return result;
+	}
+
+	void toString(int value, char* buffer){
+		int i = 0;
+		if(value == 0){
+			buffer[i++] = '0';
+			buffer[i] = '\0';
+			return;
+		}
+		char temp[10];
+		int j = 0;
+		while(value > 0){
+			temp[j++] = (value % 10) + '0';
+			value /= 10;
+		}
+		j--;
+		while(j >= 0){
+			buffer[i++] = temp[j--];
+		}
+		buffer[i] = '\0';
+	}
+
+	void clearBuffer(char* str, int size){
+		for(int i = 0; i < size; i++){
+			str[i] = '\0';
+		}
 	}
 }
