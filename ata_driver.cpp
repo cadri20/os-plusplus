@@ -48,13 +48,20 @@ static inline void rep_insw(unsigned short port, unsigned int length, void *dest
                 debug::serial_write_string(errorMsg);
                 char sectorNum[10];
                 utils::toString(sector_count, sectorNum);
-                debug::serial_write_string("Sector: ");
+                char sectorLabel[] = " at sector ";
+                debug::serial_write_string(sectorLabel);
                 debug::serial_write_string(sectorNum);
                 return;
             }
 
+            char sector[] = "Writing sector \n";
+            debug::serial_write_string(sector);
+            char sectorNumber[10];
+            utils::toString(s, sectorNumber);
+            debug::serial_write_string(sectorNumber);
 
-            fake_outsw(0x1F0, 256, buffer + (s << 9));
+
+            fake_outsw(0x1F0, 256, buffer + s * 512);
         }
 
         ata_cache_flush();

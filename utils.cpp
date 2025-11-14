@@ -80,16 +80,16 @@ namespace utils
 			char message[] = "\nWriting to disk...\n";
 			debug::serial_write_string(message);
 			debug::serial_write_string(parameter);
-			ata_driver::write_buffer(toInt(parameter), (unsigned short*)buffer, 1);// Writes to Hard disk
+			ata_driver::write_buffer(toInt(parameter), (unsigned short*)buffer, 2);// Writes to Hard disk
 
 			i = 0;
 		}
 		else if (strcmp(CMD, cmd9))
 		{
 			blockAddr = 3;
-			int numSectors = 1;
+			int numSectors = 2;
 			ata_driver::read_sectors(toInt(parameter), numSectors, At);
-			screen::printBuffer(At, numSectors * 512);
+			screen::printString(At);
 		}
 	}
 
